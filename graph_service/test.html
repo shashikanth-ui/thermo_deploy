@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Graph Visualizer</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1c; /* Dark background matching your screenshot */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        #mynetwork {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+        // 1. Your raw JSON data
+        const graphData = {
+            "nodes": [
+                { "id": "330", "label": "Attune NxT Flow Cytometer", "type": "Product" },
+                { "id": "2286", "label": "Thermo Fisher Scientific", "type": "Company" },
+                { "id": "331", "label": "Attune CytPix Flow Cytometer", "type": "Product" },
+                { "id": "2509", "label": "Strengths", "type": "CapabilityGroup" },
+                { "id": "332", "label": "Highly configurable with various laser options, including a green laser (available on NxT configurations)", "type": "Strength" },
+                { "id": "333", "label": "Supports higher multiplexing with up to 16 colors (inferred from Attune configurations)", "type": "Strength" },
+                { "id": "334", "label": "Focus on high-throughput, high-parameter fluorescence detection for broad research applicability", "type": "Strength" },
+                { "id": "335", "label": "Simpler and more direct workflow for standard fluorescence-based flow cytometry assays", "type": "Strength" },
+                { "id": "336", "label": "Faster acquisition speeds for studies focused purely on cell enumeration and immunophenotyping without imaging overhead", "type": "Strength" },
+                { "id": "337", "label": "Broad applicability for a wide range of cellular analysis experiments without specialized imaging requirements", "type": "Strength" },
+                { "id": "338", "label": "Broader market appeal as a versatile, general-purpose flow cytometer", "type": "Strength" },
+                { "id": "339", "label": "Potentially more cost-effective for standard high-parameter flow cytometry applications", "type": "Strength" },
+                { "id": "340", "label": "Established reputation and widespread adoption in research labs for robust performance", "type": "Strength" },
+                { "id": "2731", "label": "Weaknesses", "type": "CapabilityGroup" },
+                { "id": "341", "label": "Lacks integrated imaging capabilities (brightfield camera, image analysis software)", "type": "Weakness" },
+                { "id": "342", "label": "Cannot provide direct morphometric analysis alongside fluorescence data", "type": "Weakness" },
+                { "id": "343", "label": "Requires separate instrumentation or post-acquisition image correlation for morphological context", "type": "Weakness" },
+                { "id": "344", "label": "Inability to visualize cells during acquisition limits real-time morphological assessment", "type": "Weakness" },
+                { "id": "345", "label": "Researchers needing morphological data must use separate, potentially disjointed, workflows and instruments", "type": "Weakness" },
+                { "id": "346", "label": "Potential for less comprehensive data in studies where cell morphology is a critical biological parameter", "type": "Weakness" },
+                { "id": "347", "label": "Cannot compete directly in the specialized market segment requiring integrated imaging flow cytometry", "type": "Weakness" },
+                { "id": "348", "label": "May miss out on research grants or applications specifically calling for combined imaging and flow analysis", "type": "Weakness" },
+                { "id": "349", "label": "Customers prioritizing morphological context alongside immunophenotyping will seek alternative solutions", "type": "Weakness" }
+            ],
+            "edges": [
+                { "source": "330", "target": "2286", "type": "OWNED_BY" },
+                { "source": "330", "target": "331", "type": "COMPETES_WITH" },
+                { "source": "330", "target": "2509", "type": "HAS_GROUP" },
+                { "source": "2509", "target": "332", "type": "CONTAINS" },
+                { "source": "2509", "target": "333", "type": "CONTAINS" },
+                { "source": "2509", "target": "334", "type": "CONTAINS" },
+                { "source": "2509", "target": "335", "type": "CONTAINS" },
+                { "source": "2509", "target": "336", "type": "CONTAINS" },
+                { "source": "2509", "target": "337", "type": "CONTAINS" },
+                { "source": "2509", "target": "338", "type": "CONTAINS" },
+                { "source": "2509", "target": "339", "type": "CONTAINS" },
+                { "source": "2509", "target": "340", "type": "CONTAINS" },
+                { "source": "330", "target": "2731", "type": "HAS_GROUP" },
+                { "source": "2731", "target": "341", "type": "CONTAINS" },
+                { "source": "2731", "target": "342", "type": "CONTAINS" },
+                { "source": "2731", "target": "343", "type": "CONTAINS" },
+                { "source": "2731", "target": "344", "type": "CONTAINS" },
+                { "source": "2731", "target": "345", "type": "CONTAINS" },
+                { "source": "2731", "target": "346", "type": "CONTAINS" },
+                { "source": "2731", "target": "347", "type": "CONTAINS" },
+                { "source": "2731", "target": "348", "type": "CONTAINS" },
+                { "source": "2731", "target": "349", "type": "CONTAINS" }
+            ]
+        };
+
+        // 2. Map JSON arrays to Vis.js Datasets
+        const nodes = new vis.DataSet(
+            graphData.nodes.map(n => ({
+                id: n.id,
+                label: n.label,
+                group: n.type,   // Groups them by type for coloring
+                title: n.label   // Tooltip on hover
+            }))
+        );
+
+        const edges = new vis.DataSet(
+            graphData.edges.map(e => ({
+                from: e.source,
+                to: e.target,
+                label: e.type,   // Relationship text on the line
+                font: { align: 'middle', color: '#a3a3a3', size: 10, strokeWidth: 0 },
+                arrows: 'to',
+                color: { color: '#666666', highlight: '#aaaaaa' }
+            }))
+        );
+
+        // 3. Configure Graph Options (Colors, Physics, Layout)
+        const container = document.getElementById('mynetwork');
+        const data = { nodes: nodes, edges: edges };
+        const options = {
+            nodes: {
+                shape: 'circle',
+                font: { color: '#000000', size: 12, face: 'Arial' },
+                margin: 12,
+                widthConstraint: { maximum: 130 }, // Wraps long text inside the circle
+                borderWidth: 1,
+                shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10 }
+            },
+            edges: {
+                smooth: { type: 'continuous', roundness: 0.5 },
+                length: 250
+            },
+            physics: {
+                barnesHut: {
+                    gravitationalConstant: -3000,
+                    centralGravity: 0.1,
+                    springLength: 200,
+                    springConstant: 0.04
+                },
+                stabilization: { iterations: 200 } // Stops it from jiggling too long on load
+            },
+            // Define custom colors based on your "type" field
+            groups: {
+                Product: { color: { background: '#00d2d3', border: '#00b8b9' } }, // Teal
+                Company: { color: { background: '#ff9ff3', border: '#f368e0' } }, // Pink
+                CapabilityGroup: { color: { background: '#1dd1a1', border: '#10ac84' } }, // Green
+                Strength: { color: { background: '#c8d6e5', border: '#8395a7' } }, // Light Gray/Blue
+                Weakness: { color: { background: '#ff6b6b', border: '#ee5253' } }  // Red/Coral
+            }
+        };
+
+        // 4. Render the Graph
+        const network = new vis.Network(container, data, options);
+
+    </script>
+</body>
+</html>
