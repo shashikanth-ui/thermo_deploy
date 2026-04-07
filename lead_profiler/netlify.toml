@@ -1,0 +1,3 @@
+[build]
+  command = "npm run build"
+  # Deliberately leaving `publish` commented out so Netlify's Next.js runtime auto-determines everything.
