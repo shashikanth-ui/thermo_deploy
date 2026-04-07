@@ -21,7 +21,7 @@ export default function Home() {
 
         <div className="mt-16 grid gap-8 sm:grid-cols-2">
           <div
-            onClick={() => window.open('http://localhost:4000', '_blank')}
+            onClick={() => window.open(import.meta.env.VITE_LEAD_PROFILER_URL || 'http://localhost:3002', '_blank')}
             className="group cursor-pointer transition-all duration-300 hover:-translate-y-1"
           >
             <Card

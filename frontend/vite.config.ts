@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // Proxy /api calls to the backend — works regardless of which port Vite uses
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:8001',
         changeOrigin: true,
         rewrite: (path) => path,
       },
